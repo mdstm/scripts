@@ -7,10 +7,10 @@ import os
 def main():
     p = argparse.ArgumentParser(description=__doc__,
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    p.add_argument('source', nargs='?', default='.', help='源路径')
-    p.add_argument('build', nargs='?', default='build', help='构建路径')
+    p.add_argument('-s', '--source', default='.', help='源路径')
+    p.add_argument('-b', '--build', default='build', help='构建路径')
     p.add_argument('-r', '--release', action='store_true', help='发行版')
-    p.add_argument('-o', '--other', default='', help='其他 cmake 参数')
+    p.add_argument('other', nargs='*', help='其他 cmake 参数')
     p.add_argument('-c', '--clean', action='store_true', help='删除原构建')
 
     args = p.parse_args()
@@ -28,7 +28,12 @@ def main():
         f' -DCMAKE_BUILD_TYPE={(
             'Release' if args.release else
             'Debug -DCMAKE_VERBOSE_MAKEFILE=ON'
-        )} {args.other} && cmake --build "{build}"'
+        )}'
+
+    if (other := args.other):
+        cmd += '" "'.join(other).join((' "', '"'))
+
+    cmd += f' && cmake --build "{build}"'
 
     print(cmd)
     os.system(cmd)
